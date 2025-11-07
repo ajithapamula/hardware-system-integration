@@ -1,6 +1,4 @@
 ⚙️ Hardware System Integration Project
-
-```
 🧩 Overview
 ```
 This project focuses on hardware integration and automation, enabling efficient management of connected devices, real-time data processing, and hardware-level control through software APIs.
