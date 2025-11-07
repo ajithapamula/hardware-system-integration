@@ -1,6 +1,5 @@
-```
 ⚙️ Hardware System Integration Project
-```
+
 ```
 🧩 Overview
 ```
