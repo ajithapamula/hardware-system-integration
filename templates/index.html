@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>System Info + Accurate Location</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f4f8;
+      color: #333;
+    }
+
+    h1, h2 {
+      color: #004080;
+      margin-bottom: 10px;
+    }
+
+    pre {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      font-size: 14px;
+      overflow-x: auto;
+    }
+
+    #location {
+      background-color: #e6ffed;
+      border-left: 5px solid #28a745;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      white-space: pre-line;
+    }
+
+    .loading {
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>System Information</h1>
+  <pre>{{ sys_info }}</pre>
+
+  <h2>Accurate Location (Browser)</h2>
+  <p id="location" class="loading">Getting location...</p>
+
+  <script>
+    // Function to fetch location using IP as a fallback
+    function getLocationUsingIP() {
+      fetch('https://ipinfo.io/json?token=AIzaSyAZelyaUFvBesBPhw7-28SvgMDEtTntGpI')  // Get your API token from ipinfo.io
+        .then(response => response.json())
+        .then(data => {
+          const location = data.loc.split(',');
+          const latitude = location[0];
+          const longitude = location[1];
+          document.getElementById("location").innerText =
+            `IP-based Location: Latitude: ${latitude}, Longitude: ${longitude}`;
+  
+          // Optionally, use reverse geocoding to get a city/country name
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+            .then(response => response.json())
+            .then(data => {
+              if (data && data.address) {
+                const city = data.address.city || data.address.town || data.address.village || "City not found";
+                const country = data.address.country || "Country not found";
+                const displayName = data.display_name || "Location name not found";
+  
+                document.getElementById("location").innerText =
+                  `📍 Location: ${displayName}\n🏙️ City: ${city}\n🌍 Country: ${country}`;
+              } else {
+                document.getElementById("location").innerText =
+                  "❌ Detailed location information not available.";
+              }
+            })
+            .catch(error => {
+              console.error("Error fetching geolocation data:", error);
+              document.getElementById("location").innerText =
+                "⚠️ Could not fetch detailed location.";
+            });
+        })
+        .catch(error => {
+          console.error("Error fetching IP-based location:", error);
+          document.getElementById("location").innerText =
+            "⚠️ Could not fetch location using IP.";
+        });
+    }
+  
+    // Try to fetch location using browser geolocation API
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        document.getElementById("location").innerText =
+          `Latitude: ${latitude}, Longitude: ${longitude}`;
+  
+        // Reverse geocode using OpenStreetMap
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.address) {
+              const city = data.address.city || data.address.town || data.address.village || "City not found";
+              const country = data.address.country || "Country not found";
+              const displayName = data.display_name || "Location name not found";
+  
+              document.getElementById("location").innerText =
+                `📍 Location: ${displayName}\n🏙️ City: ${city}\n🌍 Country: ${country}`;
+            } else {
+              document.getElementById("location").innerText =
+                "❌ Detailed location information not available.";
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching geolocation data:", error);
+            document.getElementById("location").innerText =
+              "⚠️ Could not fetch detailed location.";
+          });
+      },
+      (error) => {
+        console.error("Error fetching geolocation:", error);
+        document.getElementById("location").innerText =
+          "❌ Permission denied or location unavailable.";
+  
+        // Fallback to IP-based location if geolocation fails
+        getLocationUsingIP();
+      }
+    );
+  </script>
+  

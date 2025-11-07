@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exact Location</title>
+</head>
+<body>
+    <h2>Detecting Your Exact Location...</h2>
+    <p id="status">Please allow location access in your browser.</p>
+    <script>
+        function sendLocationToBackend(lat, lon) {
+            fetch('http://localhost:8000/location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude: lat, longitude: lon })
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('status').innerText = "Location sent to backend!";
+            })
+            .catch(err => {
+                document.getElementById('status').innerText = "Error sending location.";
+            });
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('status').innerText = `Latitude: ${lat}, Longitude: ${lon}`;
+                    sendLocationToBackend(lat, lon);
+                },
+                error => {
+                    document.getElementById('status').innerText = "Location access denied.";
+                }
+            );
+        } else {
+            document.getElementById('status').innerText = "Geolocation is not supported.";
+        }
+    </script>
+</body>
+</html>
